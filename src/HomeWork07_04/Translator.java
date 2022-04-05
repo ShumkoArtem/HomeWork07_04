@@ -22,10 +22,11 @@ public class Translator {
      * деляем непопулярность на основании счетчика об-
      * ращений).
      */
-    public static HashMap<String, ArrayList<String>> translator = new HashMap();
+    public static Map<String, ArrayList<String>> translator = new HashMap();
     public static BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
     public static List<String> list = new ArrayList<>();//создаем временную коллекцию
-    public static HashMap<String, Integer> countWords = new HashMap<>();
+    public static ArrayList<Count> count = new ArrayList<>();
+
 
     public static void main(String[] args) throws IOException {
         showMenu(); //отображаем меню
@@ -39,9 +40,17 @@ public class Translator {
                     System.out.println("Вы выбрали 1\n" +
                             "Отобразить слово и его переводы.");
                     System.out.println("Введите английское слово");
-                    userWord = inputWord();//вводим слово и печатаем перевод
+                    userWord = inputWord();//вводим слово
                     translationOutput(userWord);//ператаем перевод
-                    countWords.put(userWord, countWords.get(userWord) + 1);//увеличиваем количество обращений
+                    //увеличиваем количество обращений в вызванном слове
+                    for (Count c : count) {
+                        if (c.getWord().equals(userWord) == true) {
+                            int tempCount = c.getCount();
+                            count.remove(c);
+                            count.add(new Count(userWord, ++tempCount));//count +1
+                            break;
+                        }
+                    }
                     choise = choise();//вводим строку и парсим в число(выбираем действие)
                     break;
                 case 2:
@@ -140,38 +149,55 @@ public class Translator {
 
                 case 4:
                     System.out.println("Вы выбрали 4\n" +
-                            "Отобразить топ-10 самых популярных слов.");
-                    HashMap<String, Integer> count = new HashMap<>();
-
+                            "Отобразить топ-3 самых популярных слов.");
+                    Collections.sort(count, new Comparator<Count>() {
+                        @Override
+                        public int compare(Count o1, Count o2) {
+                            //сортируем по соличеству обращений(от меньшего к большему)
+                            int res = -(o1.getCount() - o2.getCount());
+                            if (res == 0) { // дополнительно сортируем слова по алфавиту
+                                return -(o1.getWord().compareTo(o2.getWord()));
+                            }
+                            return res;
+                        }
+                    });
+                    // выводим 3 самых редко вызываемых слова
+                    for (int i = 0; i < 3; i++) {
+                        System.out.println(count.get(i));
+                    }
                     choise = choise();//вводим строку и парсим в число(выбираем действие)
                     break;
+
                 case 5:
                     System.out.println("Вы выбрали 5\n" +
-                            "Отобразить топ-10 самых непопулярных слов. ");
+                            "Отобразить топ-3 самых непопулярных слов. ");
+                    Collections.sort(count, new Comparator<Count>() {
+                        @Override
+                        public int compare(Count o1, Count o2) {
+                            int res = o1.getCount() - o2.getCount(); //сортируем по количеству обращений
+                            if (res == 0) { // дополнительно сортируем слова по алфавиту
+                                return o1.getWord().compareTo(o2.getWord());
+                            }
+                            return res;
+                        }
+                    });
+                    // выводим 3 самых часто вызываемых слова
+                    for (int i = 0; i < 3; i++) {
+                        System.out.println(count.get(i));
+                    }
                     choise = choise();//вводим строку и парсим в число(выбираем действие)
                     break;
-                case 0:
-                    System.out.println("THE END!!!");
-
             }
         }
-
+        System.out.println("THE END!!!");
 
     }
+
 
     //вводим число (без проверок на строки и дробные числа)
     private static int indexNumber() throws IOException {
         int num = Integer.parseInt(reader.readLine());
         return num;
-    }
-
-
-    private static Collection<String> returnTranslate(String inputWord) {
-        return translator.get(inputWord);
-    }
-
-    private static void setTranslateWord(String inputWord) {
-
     }
 
     //Вводим слово
@@ -221,15 +247,34 @@ public class Translator {
                 "0. Закончить.");
     }
 
+
     // заполняем наш MAP
     private static void init() {
-        ArrayList<String> hello = new ArrayList<>();
-        hello.addAll(Arrays.asList("Привет", "Добрый день", "Здравствуйте"));
-        translator.put("hello", hello);
-        countWords.put("hello", 0);
         ArrayList<String> buy = new ArrayList<>();
         buy.addAll(Arrays.asList("Досвидание", "Пока", "до встречи"));
         translator.put("buy", buy);
-        countWords.put("buy", 0);
+        count.add(new Count("buy", 0));
+
+        ArrayList<String> hello = new ArrayList<>();
+        hello.addAll(Arrays.asList("Привет", "Добрый день", "Здравствуйте"));
+        translator.put("hello", hello);
+        count.add(new Count("hello", 0));
+
+        ArrayList<String> sun = new ArrayList<>();
+        sun.addAll(Arrays.asList("Солнце", "Солнышко"));
+        translator.put("sun", sun);
+        count.add(new Count("sun", 0));
+
+        ArrayList<String> man = new ArrayList<>();
+        man.addAll(Arrays.asList("Человек", "Мужчина"));
+        translator.put("man", man);
+        count.add(new Count("man", 0));
+
+        ArrayList<String> moon = new ArrayList<>();
+        moon.addAll(Arrays.asList("Луна"));
+        translator.put("moon", moon);
+        count.add(new Count("moon", 0));
     }
+
+
 }
